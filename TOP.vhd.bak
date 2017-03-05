@@ -1,0 +1,93 @@
+-- Top
+LIBRARY ieee ;
+USE ieee.std_logic_1164.all ;
+
+ENTITY Top IS
+	generic (num_de_cont:integer := 4);
+PORT(
+	CLK_50M : in std_logic;
+	
+	Rst_cont : in std_logic;
+	Pll_locked : out std_logic;
+	Out_7 : out std_logic_vector (6 downto 0));	
+END Top ;
+
+ARCHITECTURE Behavior OF Top IS
+
+-- Declaracion de componentes
+
+	COMPONENT Lab3 IS
+		generic (num_de_cont:integer := 4);
+	PORT(
+		Cont0, Cont1, Cont2, Cont3 : in std_logic_vector (3 downto 0);	
+		Sel : in std_logic_vector (1 downto 0);
+		Out_7 : out std_logic_vector (6 downto 0));	
+	END COMPONENT ;
+	
+	COMPONENT Div_freq IS
+	PORT (
+		CLK : in std_logic;
+		Sel : in std_logic_vector (2 downto 0);
+		Y : out std_logic);		
+	END COMPONENT ;
+
+	COMPONENT Pllmw IS
+	PORT (
+		areset		: IN STD_LOGIC  := '0';
+		inclk0		: IN STD_LOGIC  := '0';
+		c0		: OUT STD_LOGIC ;
+		locked		: OUT STD_LOGIC );
+	END COMPONENT;
+
+	COMPONENT ContLFSR IS
+	PORT(
+		clk1 : in std_logic; 
+		reset : in std_logic;
+		q: out std_logic_vector(3 downto 0));
+	END COMPONENT;
+	
+	COMPONENT ContUPDOWN IS
+	PORT (clk : in std_logic;
+		reset :in std_logic;
+		up_down	:in	std_logic;
+		salida : out std_logic_vector(3 downto 0));
+	END COMPONENT;
+	
+	COMPONENT ContExtra IS
+	PORT(
+		clk : in std_logic;
+		reset : in std_logic;
+		q: out std_logic_vector(3 downto 0));
+	END COMPONENT;
+	
+	Signal Y : std_logic_vector (num_de_cont-1 downto 0);
+	Signal CLK_2k : std_logic;
+	Signal CLK_final : std_logic;
+	Signal C0_out, C1_out, C2_out, C3_out : std_logic_vector (3 downto 0);
+	
+BEGIN
+
+-- Instanciacion de componentes:
+
+	C0: ContUPDOWN
+	PORT MAP(CLK_final, not(Rst_cont), Up_down_0, C0_out);
+
+	C1: ContUPDOWN
+	PORT MAP(CLK_final, not(Rst_cont), Up_down_1, C1_out);
+
+	C2: ContExtra
+	PORT MAP(CLK_final, not(Rst_cont), C2_out);
+
+	C3: ContLFSR
+	PORT MAP(CLK_final, not(Rst_cont), C3_out);
+
+	Div_0 : Div_freq
+	PORT MAP(CLK_2k, Sel_freq, CLK_final);
+
+	Pll_0 : Pllmw
+	PORT MAP(not(Areset), CLK_50M, CLK_2k, Pll_locked);
+
+	Lab3_0 : Lab3
+	PORT MAP( C0_out, C1_out, C2_out, C3_out, Sel_cont, Out_7 );
+	
+END Behavior ;
