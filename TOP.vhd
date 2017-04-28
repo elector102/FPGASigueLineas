@@ -33,11 +33,13 @@ END Top ;
 ARCHITECTURE Behavior OF Top IS
 
 -- Declaracion de componentes
-	component read_sensor is
+	component read_sensor_state is
 	port(
 		sensor_data	: out std_logic_vector(7 downto 0);
-		read_ok		: out std_logic;
 		CLK_50M		: in std_logic;
+		dato_ok		:out std_logic;
+		state_out	: out std_logic_vector(2 downto 0);
+		reset			: in std_logic;
 		o_sclk      : out std_logic;
 		o_ss        : out std_logic;
 		o_mosi      : out std_logic;
@@ -47,10 +49,18 @@ ARCHITECTURE Behavior OF Top IS
     PORT(
         clk    : IN  STD_LOGIC;
         reset  : IN  STD_LOGIC;
-        entrada: IN  STD_LOGIC_VECTOR(6 downto 0);
-        salida : OUT STD_LOGIC);
+        duty_cycle: IN  STD_LOGIC_VECTOR(6 downto 0);
+        pwm_out : OUT STD_LOGIC);
 	end component;
 
+	component pid_control is
+	port (
+		clk_50mhz : in std_logic;
+		reset_btn : in std_logic;
+		sensor_data: in std_logic_vector(7 downto 0);
+		PWM_motorA: out std_logic_vector(6 downto 0);
+		PWM_motorB: out std_logic_vector(6 downto 0));
+	end component;
 --	component adc_serial_control is
 --		generic(CLK_DIV : integer := 100 );  -- input clock divider to generate output serial clock; o_sclk frequency = i_clk/(CLK_DIV)
 --	port (
@@ -75,16 +85,98 @@ ARCHITECTURE Behavior OF Top IS
 signal sensor_data		: std_logic_vector(7 downto 0);
 signal read_ok 			: std_logic;
 signal reset				: std_LOGIC;
+signal dato_ok_top		: std_LOGIC;
 signal motor_left_pwm_in :std_logic_vector(6 downto 0);
 signal motor_right_pwm_in :std_logic_vector(6 downto 0);
+signal adc_state_out 	: std_logic_vector(2 downto 0);
 BEGIN
 
 -- Instanciacion de componentes:
 
-	sensor : read_sensor PORT MAP(sensor_data, read_ok, CLK_50M, adc_sclk, adc_ss, adc_mosi, adc_miso);
+	sensor : read_sensor_state PORT MAP(sensor_data, CLK_50M, dato_ok_top, adc_state_out, reset, adc_sclk, adc_ss, adc_mosi, adc_miso);
+	pid : pid_control PORT MAP(CLK_50M, reset, sensor_data,  motor_left_pwm_in, motor_right_pwm_in);
 	motor_left_pwm : pwm_dc_101 port map(CLK_50M, reset, motor_left_pwm_in, motor_left_pwm_out);
 	motor_right_pwm : pwm_dc_101 port map(CLK_50M, reset, motor_right_pwm_in, motor_right_pwm_out);
 	reset <= '1';
+	motor_left1 <= '0';
+	motor_left2 <= '1';
+	motor_right1 <= '0';
+	motor_right2 <= '1';
+--	to_integer(signed(sensor_data))
+
+	process(clk_50M, sensor_data)
+	variable error :integer;
+	begin
+	   error := to_integer(signed(sensor_data(7 downto 0)));
+		if (error = -6) then
+			led0 <= '1';
+			led1 <= '0';
+			led2 <= '0';
+			led3 <= '0';
+			led4 <= '0';
+--			led5 <= '0';
+--			led6 <= '0';
+		elsif (error = -4) then
+			led0 <= '0';
+			led1 <= '1';
+			led2 <= '0';
+			led3 <= '0';
+			led4 <= '0';
+--			led5 <= '0';
+--			led6 <= '0';
+		elsif (error = -2) then
+			led0 <= '0';
+			led1 <= '0';
+			led2 <= '1';
+			led3 <= '0';
+			led4 <= '0';
+--			led5 <= '0';
+--			led6 <= '0';
+		elsif (error = 2) then
+			led0 <= '0';
+			led1 <= '0';
+			led2 <= '0';
+			led3 <= '1';
+			led4 <= '0';
+--			led5 <= '0';
+--			led6 <= '0';
+		elsif (error = 4) then
+			led0 <= '0';
+			led1 <= '0';
+			led2 <= '0';
+			led3 <= '0';
+			led4 <= '0';
+--			led5 <= '0';
+--			led6 <= '0';
+		elsif (error = 6) then
+			led0 <= '0';
+			led1 <= '0';
+			led2 <= '0';
+			led3 <= '0';
+			led4 <= '0';
+--			led5 <= '1';
+--			led6 <= '0';
+		else
+			led0 <= '1';
+			led1 <= '1';
+			led2 <= '1';
+			led3 <= '1';
+			led4 <= '1';
+--			led5 <= '0';
+--			led6 <= '1';
+		end if;
+
+	end process;
+	
+	process(clk_50M)
+	begin
+		led5 <= adc_state_out(0);
+		led6 <= adc_state_out(1);
+		led7 <= adc_state_out(2);
+--		led5 <= '0';
+--		led6 <= '0';
+--		led7 <= '0';
+	end process;
 --	adc_conv_ena <= '1';
 --   adc_chanel_selec <= "010";
 --	led4 <= adc_chanel_out(0);

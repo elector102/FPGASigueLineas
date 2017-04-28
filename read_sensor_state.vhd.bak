@@ -15,7 +15,7 @@ end entity;
 
 architecture principal of read_sensor is
 	component adc_serial_control is
-		generic(CLK_DIV : integer := 10000 );  -- input clock divider to generate output serial clock; o_sclk frequency = i_clk/(CLK_DIV)
+		generic(CLK_DIV : integer := 100 );  -- input clock divider to generate output serial clock; o_sclk frequency = i_clk/(CLK_DIV)
 	port (
 	  i_clk                       : in  std_logic;
 	  i_rstb                      : in  std_logic;
@@ -108,14 +108,14 @@ begin
 		
 		in_adc_ch <= "101";
 			if adc_data_valid = '1' then
-				if  out_adc_ch = "101" then
-					read_ok <= '1';
-				else
-					read_ok <= '0';
-				end if;
-				if (UNSIGNED(adc_data_out) > 2000)  then
-					error := 6;
-				end if;
+			if  out_adc_ch = "101" then
+				read_ok <= '1';
+			else
+				read_ok <= '0';
+			end if;
+			if (UNSIGNED(adc_data_out) > 2000)  then
+				error := 6;
+			end if;
 			end if;
 		sensor_data <= std_logic_vector(to_signed(error, 8));
 	end process;
