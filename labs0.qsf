@@ -91,9 +91,7 @@ set_location_assignment PIN_D5 -to motor_right_pwm_out
 set_global_assignment -name VHDL_FILE PID_control.vhd
 set_global_assignment -name VHDL_FILE read_sensor_state.vhd
 set_global_assignment -name VHDL_FILE adc_serial_control.vhd
-set_global_assignment -name VHDL_FILE blinking_led.vhd
 set_global_assignment -name VHDL_FILE pwm.vhd
 set_global_assignment -name VHDL_FILE TOP.vhd
 set_global_assignment -name VHDL_FILE TB.vhd
-set_global_assignment -name VHDL_FILE read_sensor.vhd
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -9,9 +9,9 @@ entity read_sensor_state is
 	dato_ok		:out std_logic;
 	state_out	: out std_logic_vector(2 downto 0);
 	reset			: in std_logic;
-   o_sclk      : out std_logic;
-   o_ss        : out std_logic;
-   o_mosi      : out std_logic;
+   o_sclk      : out std_logic; -- Salida de sclk hacia el adc
+   o_ss        : out std_logic; -- Salida de ss hacia el adc
+   o_mosi      : out std_logic; -- salida mosi del adc
    i_miso      : in  std_logic);
 end entity;
 
@@ -32,8 +32,6 @@ architecture main of read_sensor_state is
 	  o_mosi                      : out std_logic;
 	  i_miso                      : in  std_logic);
 	end component;
---signal adc_chanel_selec				: std_logic_vector(2 downto 0) := "000";
---signal error 							: natural :=0;
 signal in_adc_ch	, in_adc_ch2						: std_logic_vector(2 downto 0);
 signal out_adc_ch						: std_logic_vector(2 downto 0); 
 signal adc_conv_ena 					: std_logic;

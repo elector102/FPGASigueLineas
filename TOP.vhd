@@ -33,6 +33,7 @@ END Top ;
 ARCHITECTURE Behavior OF Top IS
 
 -- Declaracion de componentes
+-- lectura de sensores mediante maquina de estado
 	component read_sensor_state is
 	port(
 		sensor_data	: out std_logic_vector(7 downto 0);
@@ -45,7 +46,8 @@ ARCHITECTURE Behavior OF Top IS
 		o_mosi      : out std_logic;
 		i_miso      : in  std_logic);
 	end component;
-	component pwm_dc_101 is
+	-- Definicion del PWM
+	component pwm_dc is
     PORT(
         clk    : IN  STD_LOGIC;
         reset  : IN  STD_LOGIC;
@@ -53,6 +55,7 @@ ARCHITECTURE Behavior OF Top IS
         pwm_out : OUT STD_LOGIC);
 	end component;
 
+	-- Definicion del modulo de control por PID
 	component pid_control is
 	port (
 		clk_50mhz : in std_logic;
@@ -61,27 +64,6 @@ ARCHITECTURE Behavior OF Top IS
 		PWM_motorA: out std_logic_vector(6 downto 0);
 		PWM_motorB: out std_logic_vector(6 downto 0));
 	end component;
---	component adc_serial_control is
---		generic(CLK_DIV : integer := 100 );  -- input clock divider to generate output serial clock; o_sclk frequency = i_clk/(CLK_DIV)
---	port (
---	  i_clk                       : in  std_logic;
---	  i_rstb                      : in  std_logic;
---	  i_conv_ena                  : in  std_logic;  -- enable ADC convesion
---	  i_adc_ch                    : in  std_logic_vector(2 downto 0);  -- ADC channel 0-7
---	  o_adc_data_valid            : out std_logic;  -- conversion valid pulse
---	  o_adc_ch                    : out std_logic_vector(2 downto 0);  -- ADC converted channel
---	  o_adc_data                  : out std_logic_vector(11 downto 0); -- adc parallel data  
---	-- ADC serial interface
---	  o_sclk                      : out std_logic;
---	  o_ss                        : out std_logic;
---	  o_mosi                      : out std_logic;
---	  i_miso                      : in  std_logic);
---	end component;
---signal adc_chanel_selec				: std_logic_vector(2 downto 0) := "000";
---signal adc_data_valid				: std_logic;
---signal adc_chanel_out				: std_logic_vector(2 downto 0);
---signal adc_data_out					: std_logic_vector(11 downto 0);	
---signal adc_conv_ena					: std_logic;
 signal sensor_data		: std_logic_vector(7 downto 0);
 signal read_ok 			: std_logic;
 signal reset				: std_LOGIC;
@@ -95,15 +77,15 @@ BEGIN
 
 	sensor : read_sensor_state PORT MAP(sensor_data, CLK_50M, dato_ok_top, adc_state_out, reset, adc_sclk, adc_ss, adc_mosi, adc_miso);
 	pid : pid_control PORT MAP(CLK_50M, reset, sensor_data,  motor_left_pwm_in, motor_right_pwm_in);
-	motor_left_pwm : pwm_dc_101 port map(CLK_50M, reset, motor_left_pwm_in, motor_left_pwm_out);
-	motor_right_pwm : pwm_dc_101 port map(CLK_50M, reset, motor_right_pwm_in, motor_right_pwm_out);
+	motor_left_pwm : pwm_dc port map(CLK_50M, reset, motor_left_pwm_in, motor_left_pwm_out);
+	motor_right_pwm : pwm_dc port map(CLK_50M, reset, motor_right_pwm_in, motor_right_pwm_out);
 	reset <= '1';
 	motor_left1 <= '0';
 	motor_left2 <= '1';
 	motor_right1 <= '0';
 	motor_right2 <= '1';
---	to_integer(signed(sensor_data))
 
+   -- Proceso por el cueal se muestran distintos estados de la medicion de adc por los led
 	process(clk_50M, sensor_data)
 	variable error :integer;
 	begin
@@ -177,43 +159,4 @@ BEGIN
 --		led6 <= '0';
 --		led7 <= '0';
 	end process;
---	adc_conv_ena <= '1';
---   adc_chanel_selec <= "010";
---	led4 <= adc_chanel_out(0);
---	led5 <= adc_chanel_out(1);
---	led6 <= adc_chanel_out(2);
---	led7 <= Rst;
---	process (adc_data_valid, adc_chanel_out)
---		begin
---			if rising_edge(adc_data_valid) then
---				if (UNSIGNED(adc_data_out) > 2000)  then
---					if (adc_chanel_out = "000") then
---						led0 <= '1';
---					end if;
---					if (adc_chanel_out = "010") then
---						led1 <= '1';
---					end if;
---					if (adc_chanel_out = "100") then
---						led2 <= '1';
---					end if;
---					if (adc_chanel_out = "101") then
---						led3 <= '1';
---					end if;
---				end if;
---				if (UNSIGNED(adc_data_out) < 3000)  then
---					if (adc_chanel_out = "000") then
---						led0 <= '0';
---					end if;
---					if (adc_chanel_out = "010") then
---						led1 <= '0';
---					end if;
---					if (adc_chanel_out = "100") then
---						led2 <= '0';
---					end if;
---					if (adc_chanel_out = "101") then
---						led3 <= '0';
---					end if;	
---				end if;
---			end if;
---		end process;
 END Behavior ;

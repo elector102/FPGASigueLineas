@@ -4,33 +4,33 @@ use ieee.numeric_std.all;
 
 entity pid_control is
 	port (
-		clk_50mhz : in std_logic;
-		reset_btn : in std_logic;
-		sensor_data: in std_logic_vector(7 downto 0);
-		PWM_motorA: out std_logic_vector(6 downto 0);
-		PWM_motorB: out std_logic_vector(6 downto 0));
+		clk_50mhz : in std_logic; --entrada de reloj
+		reset_btn : in std_logic; -- Entrada de reset
+		sensor_data: in std_logic_vector(7 downto 0); -- Entrada del error desde read_sensor_state
+		PWM_motorA: out std_logic_vector(6 downto 0); -- Salida del PWM del motor_A (izquierdo)
+		PWM_motorB: out std_logic_vector(6 downto 0)); -- Salida del PWM del motor_B (derecho)
 end entity;
 
 architecture behave of pid_control is
-signal clk_1hz : std_logic;
 begin
-
+   -- PID control, define las salidas de los PWM de acuerdo con la lectura de los sensores
 	process(clk_50mhz, reset_btn)
 	variable error, pwm_motorAA, pwm_motorBB :integer;
 	
 	begin
 		error := to_integer(signed(sensor_data(7 downto 0)));
-	   if error > 0 then
+	   if error > 0 then -- si el error es mayor a 0, giro a la izquierda
 			pwm_motorAA := 0;
 			pwm_motorBB := 100;
-		elsif error < 0 then
+		elsif error < 0 then -- Si el error es menor a 0, giro a la derecha
 			pwm_motorAA := 100;
 			pwm_motorBB := 0;
-		else
+		else -- Si no tenemos error sigo hacia delante
 			pwm_motorAA := 100;
 			pwm_motorBB := 100;
 		end if;
-		pwm_motorA <= std_logic_vector(to_signed(pwm_motorAA, 7));
+		-- convierto los porcentajes de entero a std_logic_vector
+		pwm_motorA <= std_logic_vector(to_signed(pwm_motorAA, 7)); 
 		pwm_motorB <= std_logic_vector(to_signed(pwm_motorBB, 7));
 	end process;
 end behave;
