@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 entity adc_serial_control is
 generic(
-  CLK_DIV               : integer := 50 );  -- input clock divider to generate output serial clock; o_sclk frequency = i_clk/(CLK_DIV)
+  CLK_DIV               : integer :=  5 );  -- input clock divider to generate output serial clock; o_sclk frequency = i_clk/(CLK_DIV)
 port (
   i_clk                       : in  std_logic;
   i_rstb                      : in  std_logic;

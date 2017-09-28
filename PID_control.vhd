@@ -20,11 +20,11 @@ begin
 	begin
 		error := to_integer(signed(sensor_data(7 downto 0)));
 	   if error > 0 then -- si el error es mayor a 0, giro a la izquierda
-			pwm_motorAA := 0;
+			pwm_motorAA := 20;
 			pwm_motorBB := 100;
 		elsif error < 0 then -- Si el error es menor a 0, giro a la derecha
 			pwm_motorAA := 100;
-			pwm_motorBB := 0;
+			pwm_motorBB := 20;
 		else -- Si no tenemos error sigo hacia delante
 			pwm_motorAA := 100;
 			pwm_motorBB := 100;

@@ -42,7 +42,7 @@ set_global_assignment -name DEVICE EP4CE22F17C6
 set_global_assignment -name TOP_LEVEL_ENTITY TOP
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "20:58:40  JANUARY 18, 2017"
-set_global_assignment -name LAST_QUARTUS_VERSION "16.1.0 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "17.0.0 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
@@ -82,16 +82,40 @@ set_location_assignment PIN_D1 -to led4
 set_location_assignment PIN_F3 -to led5
 set_location_assignment PIN_B1 -to led6
 set_location_assignment PIN_L3 -to led7
-set_location_assignment PIN_D3 -to motor_left1
-set_location_assignment PIN_C3 -to motor_left2
-set_location_assignment PIN_A3 -to motor_right1
-set_location_assignment PIN_B4 -to motor_right2
-set_location_assignment PIN_B5 -to motor_left_pwm_out
-set_location_assignment PIN_D5 -to motor_right_pwm_out
+set_location_assignment PIN_D11 -to motor_left1
+set_location_assignment PIN_B12 -to motor_left2
+set_location_assignment PIN_E10 -to motor_right1
+set_location_assignment PIN_B11 -to motor_right2
+set_location_assignment PIN_D9 -to motor_left_pwm_out
+set_location_assignment PIN_E9 -to motor_right_pwm_out
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to motor_left1
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to motor_left2
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to motor_left_pwm_out
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to motor_right1
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to motor_right2
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to motor_right_pwm_out
+set_global_assignment -name VHDL_FILE pll/Top.vhd
+set_global_assignment -name VHDL_FILE pll/Pllmw.vhd
+set_global_assignment -name VHDL_FILE pll/Div_freq.vhd
+set_global_assignment -name VHDL_FILE pll/Deco.vhd
 set_global_assignment -name VHDL_FILE PID_control.vhd
 set_global_assignment -name VHDL_FILE read_sensor_state.vhd
 set_global_assignment -name VHDL_FILE adc_serial_control.vhd
 set_global_assignment -name VHDL_FILE pwm.vhd
 set_global_assignment -name VHDL_FILE TOP.vhd
 set_global_assignment -name VHDL_FILE TB.vhd
+set_location_assignment PIN_D12 -to out_PLL_clock
+set_location_assignment PIN_A12 -to out_motor_clock
+set_location_assignment PIN_C11 -to out_ADC_clock
+set_location_assignment PIN_E11 -to out_port_serie_clock
+set_location_assignment PIN_C9 -to out_pll_locked
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to out_ADC_clock
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to out_motor_clock
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to out_PLL_clock
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to out_pll_locked
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to out_port_serie_clock
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led5
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led6
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to led7
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led4
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
