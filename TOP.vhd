@@ -30,7 +30,11 @@ PORT(
    out_ADC_clock			: out std_LOGIC;
    out_port_serie_clock	: out std_LOGIC;
    out_PLL_clock			: out std_LOGIC;
-   out_pll_locked		   : out std_LOGIC);
+   out_pll_locked		   : out std_LOGIC;
+	test_adc_sclock		: out STD_LOGIC;
+	test_adc_ss				: out STD_LOGIC;
+	test_adc_mosi			: out STD_LOGIC;
+	test_adc_miso			: out STD_LOGIC);
 --	Pll_locked : out std_logic;
 --	Out_7 : out std_logic_vector (6 downto 0));	
 END Top ;
@@ -94,6 +98,10 @@ signal port_serie_clock	: std_LOGIC;
 signal PLL_clock			: std_LOGIC;
 signal pll_locked		   : std_LOGIC;
 signal reset_pll			: std_logic;
+signal local_test_adc_sclock : std_logic;
+signal local_test_adc_ss : std_logic;
+signal local_test_adc_mosi : std_logic;
+signal local_test_adc_miso : std_logic;
 BEGIN
 
 -- Instanciacion de componentes:
@@ -113,6 +121,17 @@ BEGIN
    out_port_serie_clock	<= port_serie_clock;
    out_PLL_clock <= PLL_clock;
    out_pll_locked	<=pll_locked;
+	
+   local_test_adc_sclock <= adc_sclk;
+	local_test_adc_ss <= adc_ss;
+	local_test_adc_mosi <= adc_mosi;
+	local_test_adc_miso <= adc_miso;
+	
+	test_adc_sclock <= local_test_adc_sclock;
+	test_adc_ss <= local_test_adc_ss;
+	test_adc_mosi <= local_test_adc_mosi;
+	test_adc_miso <= local_test_adc_miso;
+	
 
    -- Proceso por el cueal se muestran distintos estados de la medicion de adc por los led
 	process(clk_50M)

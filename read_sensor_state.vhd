@@ -3,6 +3,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity read_sensor_state is 
+	generic (
+	  delay: integer := 50
+	);
 	port (
 	sensor_data	: out std_logic_vector(7 downto 0);
 	CLK_50M		: in std_logic;
@@ -67,6 +70,7 @@ begin
 	-- Logica de siguiente estado y salida
 	process(clk_50M)
 	variable error : integer;-- Variable error
+	variable contador : integer := delay;
 	begin
 	if clk_50M'event and clk_50M = '1' then
 		case Q_bus is
@@ -74,98 +78,128 @@ begin
 		when read_sensor_0 =>
 		   --error := 0;
 		   in_adc_ch <= "000";-- Selecciono el canal que deseo leer.
-			if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida. 
-				if out_adc_ch = "000" then -- Verifico que la salida sea del canal seleccionado.
-					if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
-						error := - 6; -- Si lee un color blanco le asigno el error -6.
+			if contador = 0 then
+				if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida. 
+					if out_adc_ch = "000" then -- Verifico que la salida sea del canal seleccionado.
+						if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
+							error := - 6; -- Si lee un color blanco le asigno el error -6.
+						end if;
+						-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
+						in_adc_ch <= "001";
+						D_bus <= read_sensor_1;
+						contador := delay;
+					else
+						-- Si aun no se encuentra el dato disponible, me quedo en el estado actual.
+						D_bus <= read_sensor_0;
 					end if;
-					-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
-					in_adc_ch <= "001";
-					D_bus <= read_sensor_1;
-				else
-				   -- Si aun no se encuentra el dato disponible, me quedo en el estado actual.
-					D_bus <= read_sensor_0;
 				end if;
+			else
+			  contador := contador - 1;
 			end if;
 		-- Lectura sensor 1
 		when read_sensor_1 =>
 		   in_adc_ch <= "001";
-			if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
-				if out_adc_ch = "001" then -- Verifico que la salida sea del canal seleccionado.
-					if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
-						error :=	- 4;-- Si lee un color blanco le asigno el error -4.
+			if contador = 0 then
+				if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
+					if out_adc_ch = "001" then -- Verifico que la salida sea del canal seleccionado.
+						if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
+							error :=	- 4;-- Si lee un color blanco le asigno el error -4.
+						end if;
+						-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
+						in_adc_ch <= "010";
+						D_bus <= read_sensor_2;
+						contador := delay;
+					else
+						-- si aun no se encuentra el dato disponible, me quedo en el estado actual.
+						D_bus <= read_sensor_1;
 					end if;
-					-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
-					in_adc_ch <= "010";
-					D_bus <= read_sensor_2;
-				else
-					-- si aun no se encuentra el dato disponible, me quedo en el estado actual.
-					D_bus <= read_sensor_1;
 				end if;
+			else
+			  contador :=contador - 1;
 			end if;
 		-- Lectura sensor 2
 		when read_sensor_2 =>
 		   in_adc_ch <= "010";
-			if adc_data_valid = '1' then-- Verifico si ya tengo un dato valido a la salida.
-				if out_adc_ch = "010" then-- Verifico si ya tengo un dato valido a la salida. 
-					if (UNSIGNED(adc_data_out) > 2500)  then -- Pregunto si el sensor esta viendo un color blanco.
-						error := - 2; -- Si lee un color blanco le asigno el error -2.
+			if contador = 0 then
+				if adc_data_valid = '1' then-- Verifico si ya tengo un dato valido a la salida.
+					if out_adc_ch = "010" then-- Verifico si ya tengo un dato valido a la salida. 
+						if (UNSIGNED(adc_data_out) > 2500)  then -- Pregunto si el sensor esta viendo un color blanco.
+							error := - 2; -- Si lee un color blanco le asigno el error -2.
+						end if;
+						-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
+						in_adc_ch <= "011";
+						D_bus <= read_sensor_3;
+						contador := delay;
+					else
+						-- si aun no se encuentra el dato disponible, me quedo en el estado actual.
+						D_bus <= read_sensor_2;
 					end if;
-					-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
-					in_adc_ch <= "011";
-					D_bus <= read_sensor_3;
-				else
-				   -- si aun no se encuentra el dato disponible, me quedo en el estado actual.
-					D_bus <= read_sensor_2;
 				end if;
+			else
+			  contador := contador - 1;
 			end if;
 		-- Lectura sensor 3
 		when read_sensor_3 =>
 		   in_adc_ch <= "011";
-			if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
-				if out_adc_ch = "011" then -- Verifico si ya tengo un dato valido a la salida. 
-					if (UNSIGNED(adc_data_out) > 2500)  then -- Pregunto si el sensor esta viendo un color blanco.
-						error := 2;	-- Si lee un color blanco le asigno el error 2.
+			if contador = 0 then
+				if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
+					if out_adc_ch = "011" then -- Verifico si ya tengo un dato valido a la salida. 
+						if (UNSIGNED(adc_data_out) > 2500)  then -- Pregunto si el sensor esta viendo un color blanco.
+							error := 2;	-- Si lee un color blanco le asigno el error 2.
+						end if;
+						-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
+						in_adc_ch <= "100";
+						D_bus <= read_sensor_4;
+						contador := delay;
+					else
+						-- si aun no se encuentra el dato disponible, me quedo en el estado actual.
+						D_bus <= read_sensor_3;
 					end if;
-					-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
-					in_adc_ch <= "100";
-					D_bus <= read_sensor_4;
-				else
-				   -- si aun no se encuentra el dato disponible, me quedo en el estado actual.
-					D_bus <= read_sensor_3;
 				end if;
+			else
+			  contador := contador - 1;
 			end if;
 		-- Lectura sensor 4
 		when read_sensor_4 =>
 		   in_adc_ch <= "100";
-			if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
-				if out_adc_ch = "100" then -- Verifico si ya tengo un dato valido a la salida. 
-					if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
-						error := 4; -- Si lee un color blanco le asigno el error 4.
+			if contador = 0 then
+				if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
+					if out_adc_ch = "100" then -- Verifico si ya tengo un dato valido a la salida. 
+						if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
+							error := 4; -- Si lee un color blanco le asigno el error 4.
+						end if;
+						-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
+						in_adc_ch <= "101";
+						D_bus <= read_sensor_5;
+						contador := delay;
+					else
+						-- si aun no se encuentra el dato disponible, me quedo en el estado actual.
+						D_bus <= read_sensor_4;
 					end if;
-					-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
-					in_adc_ch <= "101";
-					D_bus <= read_sensor_5;
-				else
-				   -- si aun no se encuentra el dato disponible, me quedo en el estado actual.
-					D_bus <= read_sensor_4;
 				end if;
+			else
+			  contador := contador - 1;
 			end if;
 		-- Lectura sensor 5
 		when read_sensor_5 =>
 		   in_adc_ch <= "101";
-			if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
-				if out_adc_ch = "101" then -- Verifico si ya tengo un dato valido a la salida. 
-					if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
-						error :=  6; -- Si lee un color blanco le asigno el error 6.
+			if contador = 0 then
+				if adc_data_valid = '1' then -- Verifico si ya tengo un dato valido a la salida.
+					if out_adc_ch = "101" then -- Verifico si ya tengo un dato valido a la salida. 
+						if (UNSIGNED(adc_data_out) < 1000)  then -- Pregunto si el sensor esta viendo un color blanco.
+							error :=  6; -- Si lee un color blanco le asigno el error 6.
+						end if;
+						-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
+						in_adc_ch <= "000";
+						D_bus <= read_sensor_0;
+						contador := delay;
+					else
+						-- Si aun no se encuentra el dato disponible, me quedo en el estado actual.
+						D_bus <= read_sensor_5;
 					end if;
-					-- Luego de leer el sensor, lego el siguiente canar, selecciono el proximo canal y cambio de estado.
-					in_adc_ch <= "000";
-					D_bus <= read_sensor_0;
-				else
-				   -- Si aun no se encuentra el dato disponible, me quedo en el estado actual.
-					D_bus <= read_sensor_5;
 				end if;
+			else
+			  contador := contador - 1;
 			end if;
 		end case;
 							-- Salida del error 
