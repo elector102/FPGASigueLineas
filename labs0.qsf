@@ -42,7 +42,7 @@ set_global_assignment -name DEVICE EP4CE22F17C6
 set_global_assignment -name TOP_LEVEL_ENTITY TOP
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "20:58:40  JANUARY 18, 2017"
-set_global_assignment -name LAST_QUARTUS_VERSION "16.1.0 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "17.0.0 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
@@ -54,8 +54,6 @@ set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
 set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
 set_global_assignment -name VHDL_FILE ../codigo/ADC/adc_serial_control.vhd
-set_global_assignment -name VHDL_FILE blinking_led.vhd
-set_global_assignment -name VHDL_FILE pwm.vhd
 set_global_assignment -name VHDL_FILE TOP.vhd
 set_global_assignment -name VHDL_FILE TB.vhd
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
@@ -63,11 +61,6 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to motor_A1
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to green_led
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to motor_A2
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to enable_motor_B
-set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to enable_motor_A
 set_location_assignment PIN_A9 -to adc_miso
 set_location_assignment PIN_B10 -to adc_mosi
 set_location_assignment PIN_B14 -to adc_sclk
@@ -77,7 +70,7 @@ set_location_assignment PIN_A15 -to led0
 set_location_assignment PIN_A13 -to led1
 set_location_assignment PIN_B13 -to led2
 set_location_assignment PIN_A11 -to led3
-set_location_assignment PIN_M1 -to Rst
+set_location_assignment PIN_J15 -to Rst
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to adc_miso
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to adc_mosi
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to adc_sclk
@@ -88,12 +81,20 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led1
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led2
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led3
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to Rst
-set_global_assignment -name CDF_FILE output_files/Chain2.cdf
-set_global_assignment -name CDF_FILE output_files/Chain3.cdf
-set_global_assignment -name CDF_FILE output_files/Chain4.cdf
 set_location_assignment PIN_D1 -to led4
 set_location_assignment PIN_F3 -to led5
 set_location_assignment PIN_B1 -to led6
 set_location_assignment PIN_L3 -to led7
-set_global_assignment -name VHDL_FILE read_sensor.vhd
+set_location_assignment PIN_T8 -to in_data_ch[2]
+set_location_assignment PIN_B9 -to in_data_ch[1]
+set_location_assignment PIN_M15 -to in_data_ch[0]
+set_location_assignment PIN_F9 -to test_miso
+set_location_assignment PIN_E8 -to test_mosi
+set_location_assignment PIN_E7 -to test_sclk
+set_location_assignment PIN_C8 -to test_ss
+set_location_assignment PIN_M1 -to start_adc
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to test_miso
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to test_mosi
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to test_sclk
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to test_ss
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
