@@ -30,7 +30,11 @@ PORT(
    out_ADC_clock			: out std_LOGIC;
    out_port_serie_clock	: out std_LOGIC;
    out_PLL_clock			: out std_LOGIC;
-   out_pll_locked		   : out std_LOGIC);
+   out_pll_locked		   : out std_LOGIC;
+	test_adc_sclock		: out STD_LOGIC;
+	test_adc_ss				: out STD_LOGIC;
+	test_adc_mosi			: out STD_LOGIC;
+	test_adc_miso			: out STD_LOGIC);
 --	Pll_locked : out std_logic;
 --	Out_7 : out std_logic_vector (6 downto 0));	
 END Top ;
@@ -42,7 +46,7 @@ ARCHITECTURE Behavior OF Top IS
 	component read_sensor_state is
 	port(
 		sensor_data	: out std_logic_vector(7 downto 0);
-		CLK_50M		: in std_logic;
+		CLK		: in std_logic;
 		dato_ok		:out std_logic;
 		state_out	: out std_logic_vector(2 downto 0);
 		reset			: in std_logic;
@@ -94,11 +98,16 @@ signal port_serie_clock	: std_LOGIC;
 signal PLL_clock			: std_LOGIC;
 signal pll_locked		   : std_LOGIC;
 signal reset_pll			: std_logic;
+
+signal local_test_adc_sclock : std_logic;
+signal local_test_adc_ss : std_logic;
+signal local_test_adc_mosi : std_logic;
+signal local_test_adc_miso : std_logic;
 BEGIN
 
 -- Instanciacion de componentes:
    pll : Top_pll port map(motor_clock, ADC_clock, port_serie_clock, PLL_clock, reset_pll, CLK_50M, pll_locked);
-	sensor : read_sensor_state PORT MAP(sensor_data, ADC_clock, dato_ok_top, adc_state_out, reset, adc_sclk, adc_ss, adc_mosi, adc_miso);
+	sensor : read_sensor_state PORT MAP(sensor_data, ADC_clock, dato_ok_top, adc_state_out, reset, local_test_adc_sclock, local_test_adc_ss, local_test_adc_mosi, local_test_adc_miso);
 	pid : pid_control PORT MAP(CLK_50M, reset, sensor_data,  motor_left_pwm_in, motor_right_pwm_in);
 	motor_left_pwm : pwm_dc port map(motor_clock, reset, motor_left_pwm_in, motor_left_pwm_out);
 	motor_right_pwm : pwm_dc port map(motor_clock, reset, motor_right_pwm_in, motor_right_pwm_out);
@@ -113,6 +122,18 @@ BEGIN
    out_port_serie_clock	<= port_serie_clock;
    out_PLL_clock <= PLL_clock;
    out_pll_locked	<=pll_locked;
+	
+	
+   -- Señales buffer para poder sacarlas por pin para testeo.
+	adc_sclk <= local_test_adc_sclock ;
+	adc_ss <= local_test_adc_ss;
+	adc_mosi <= local_test_adc_mosi;
+	local_test_adc_miso <= adc_miso;
+	
+	test_adc_sclock <= local_test_adc_sclock;
+	test_adc_ss <= local_test_adc_ss;
+	test_adc_mosi <= local_test_adc_mosi;
+	test_adc_miso <= local_test_adc_miso;
 
    -- Proceso por el cueal se muestran distintos estados de la medicion de adc por los led
 	process(clk_50M)
