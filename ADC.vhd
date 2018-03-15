@@ -158,7 +158,7 @@ begin
 				end if;
 					
 			
-			--- Copy ADC Data ---
+			--- Guardar datos del ADC ---
 	
 			when STORE   =>
 			

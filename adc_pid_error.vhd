@@ -2,114 +2,64 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity adc_pid_error is 
+entity adc_pid_error is
+generic(
+		threshold_value    : integer :=  1900 );
 	port (
 	sensor_data	: out std_logic_vector(7 downto 0);
 	sensor_state	: out std_logic_vector(7 downto 0);
 	CLK_50M		: in std_logic;
 	reset			: in std_logic;
-   o_sclk      : out std_logic; -- Salida de sclk hacia el adc
-   o_ss        : out std_logic; -- Salida de ss hacia el adc
-   o_mosi      : out std_logic; -- salida mosi del adc
-   i_miso      : in  std_logic);
+
+	--- Datos de entrada ADC ---
+	ADC_CH0  :  IN INTEGER RANGE 0 TO 4095;
+	ADC_CH1  :  IN INTEGER RANGE 0 TO 4095;
+	ADC_CH2  :  IN INTEGER RANGE 0 TO 4095;
+	ADC_CH3  :  IN INTEGER RANGE 0 TO 4095;
+	ADC_CH4  :  IN INTEGER RANGE 0 TO 4095;
+	ADC_CH5  :  IN INTEGER RANGE 0 TO 4095;
+	ADC_CH6  :  IN INTEGER RANGE 0 TO 4095;
+	ADC_CH7  :  IN INTEGER RANGE 0 TO 4095);
 end entity;
 
 architecture main of adc_pid_error is
 
--- ADC conversion
-component ADC is
-port (	
-	
-	--- ADC Pins ---
-	Clk      :  IN  STD_LOGIC;
-	oDIN     :  OUT STD_LOGIC;
-	oCS_n    :  OUT STD_LOGIC;
-	oSCLK    :  OUT STD_LOGIC;
-	iDOUT    :  IN  STD_LOGIC;
-	
-	--- ADC Datas ---
-	ADC_CH0  :  OUT INTEGER RANGE 0 TO 4095;
-	ADC_CH1  :  OUT INTEGER RANGE 0 TO 4095;
-	ADC_CH2  :  OUT INTEGER RANGE 0 TO 4095;
-	ADC_CH3  :  OUT INTEGER RANGE 0 TO 4095;
-	ADC_CH4  :  OUT INTEGER RANGE 0 TO 4095;
-	ADC_CH5  :  OUT INTEGER RANGE 0 TO 4095;
-	ADC_CH6  :  OUT INTEGER RANGE 0 TO 4095;
-	ADC_CH7  :  OUT INTEGER RANGE 0 TO 4095;
-	
-	--- Test Output ---
-	TEST_OUT :  OUT STD_LOGIC  	
-	
-);
-end component;
--- ADC signals
-type BUFFER_DATAS is array (7 DOWNTO 0) of INTEGER RANGE 0 TO 4095;
-signal ADC_BUF_CH : BUFFER_DATAS;
-signal TEST_OUT_BUF  : STD_LOGIC;
 signal sensor: std_logic_vector(7 downto 0);
-begin
-   	
-	line_sensor : ADC PORT MAP(	
-		
-		--- ADC Pins ---
-		Clk => CLK_50M,
-		oDIN => o_mosi,
-		oCS_n => o_ss,
-		oSCLK => o_sclk,
-		iDOUT => i_miso,
-		
-		-- ADC Data Buffers --						  
-		ADC_CH0     =>  ADC_BUF_CH(0), 
-		ADC_CH1     =>  ADC_BUF_CH(1),
-		ADC_CH2     =>  ADC_BUF_CH(2),
-		ADC_CH3     =>  ADC_BUF_CH(3),
-		ADC_CH4     =>  ADC_BUF_CH(4),
-		ADC_CH5     =>  ADC_BUF_CH(5),
-		ADC_CH6     =>  ADC_BUF_CH(6),
-		ADC_CH7     =>  ADC_BUF_CH(7),
-		
-		--- Test Output ---
-		TEST_OUT    =>  TEST_OUT_BUF  );	
-		
-	
+begin	
 
-	process(clk_50M)
-		
-		begin		
-		if clk_50M'event and clk_50M = '1' then
+	process(ADC_CH0, ADC_CH1, ADC_CH2, ADC_CH3, ADC_CH4, ADC_CH5)
+		begin
 
-			if (ADC_BUF_CH(0) > 1900) then --Negro
+			if (ADC_CH0 > threshold_value) then --Negro
 				sensor(0) <= '0';
 			else
 			   sensor(0) <= '1';
 			end if;
-			if (ADC_BUF_CH(1) > 1900) then -- Negro
+			if (ADC_CH1 > threshold_value) then -- Negro
 				sensor(1) <= '0';
 			else
 			   sensor(1) <= '1';
 			end if;
-			if (ADC_BUF_CH(2) > 1900) then -- Blanco
+			if (ADC_CH2 > threshold_value) then -- Blanco
 				sensor(2) <= '0';
 			else
 			   sensor(2) <= '1';
 			end if;
-			if (ADC_BUF_CH(3) > 1900) then -- Blanco
+			if (ADC_CH3 > threshold_value) then -- Blanco
 				sensor(3) <= '0';
 			else
 			   sensor(3) <= '1';
 			end if;
-			if (ADC_BUF_CH(4) > 1900) then -- Negro
+			if (ADC_CH4 > threshold_value) then -- Negro
 				sensor(4) <= '0';
 			else
 			   sensor(4) <= '1';
 			end if;
-			if (ADC_BUF_CH(5) > 1900) then -- Negro
+			if (ADC_CH5 > threshold_value) then -- Negro
 				sensor(5) <= '0';
 			else
 			   sensor(5) <= '1';
 			end if;
-
-
 			sensor_state(0) <= sensor(0);
 			sensor_state(1) <= sensor(1);
 			sensor_state(2) <= sensor(2);
@@ -119,16 +69,11 @@ begin
 			sensor_state(6) <= sensor(6);
 			sensor_state(7) <= sensor(7);
 			-- Salida del error 
-	      
-		end if;
 	end process;
 	
-	process(clk_50M)
+	process(sensor)
 		variable error : integer:= 0;-- Variable error
 		begin
-		
-		if clk_50M'event and clk_50M = '1' then
-			error := 0;
 			if (sensor(0) = '0') and (sensor(1) = '1') then-- negro y blanco
 				error := - 10;
 			elsif (sensor(0) = '0') and (sensor(1) = '0') then-- negro y negro
@@ -151,8 +96,16 @@ begin
 				error := 8;
 			elsif (sensor(4) = '1') and (sensor(5) = '0') then-- negro y negro
 				error := 10;
+--			elsif(sensor(0) = '1') and (sensor(1) = '1') and (sensor(2) = '1') and (sensor(3) = '1') and (sensor(4) = '1') and (sensor(5) = '1') then
+--				error := 100;
 			end if;
 			
+			sensor_data <= std_logic_vector(to_signed(error, 8));
+	end process;
+end architecture;
+
+
+---------------------------------------------------------------------------------------------------------
 			
 --						if (sensor(0) = '0') and (sensor(1) = '1') then-- negro y blanco
 --				error := - 10;
@@ -241,10 +194,8 @@ begin
 --			sensor_state(6) <= sensor(6);
 --			sensor_state(7) <= sensor(7);
 			-- Salida del error 
-	      
-		end if;
-		sensor_data <= std_logic_vector(to_signed(error, 8));
-	end process;	
+--		sensor_data <= std_logic_vector(to_signed(error, 8));
+--	end process;	
 --	process(clk_50M)
 --		variable error : integer:= 0;-- Variable error
 --		variable sensor: std_logic_vector(7 downto 0);
@@ -488,4 +439,3 @@ begin
 --      END CASE;
 --   END PROCESS;	
 	
-end architecture;
