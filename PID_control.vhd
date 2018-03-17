@@ -6,21 +6,21 @@ entity pid_control is
 	generic(
 		KP               : integer :=  20 ;
 		KI               : integer :=  0 ;
-		KD               : integer :=  0 ;
-		MOTOR_MAX_PWM    : integer :=  99); 
+		KD               : integer :=  0 );
 	port (
 		clk_50mhz : in std_logic; --entrada de reloj
 		reset_btn : in std_logic; -- Entrada de reset
 		sensor_data: in std_logic_vector(7 downto 0); -- Entrada del error desde read_sensor_state
-		PWM_motorA: out std_logic_vector(6 downto 0); -- Salida del PWM del motor_A (izquierdo)
-		PWM_motorB: out std_logic_vector(6 downto 0); -- Salida del PWM del motor_B (derecho)
-		motor_direcction : out integer range -1 to 1);
+		PID_value : OUT integer range -500 to 500);
+--		PWM_motorA: out std_logic_vector(6 downto 0); -- Salida del PWM del motor_A (izquierdo)
+--		PWM_motorB: out std_logic_vector(6 downto 0); -- Salida del PWM del motor_B (derecho)
+--		motor_direcction : out integer range -1 to 1);
 end entity;
 
 architecture behave of pid_control is
 begin
 	process(sensor_data)
-	variable proportional, integral, derivative, PWM_motorAA, PWM_motorBB, PID_value:integer :=0;
+	variable proportional, integral, derivative :integer :=0;
 	variable last_proportional : integer :=0;
 	
 	
@@ -35,35 +35,35 @@ begin
 			integral := -100;
 		end if;
 		
-		PID_value := ( proportional * KP ) + ( derivative * KD ) + (integral * KI);
-		if (PID_value < 0) then
-			PWM_motorAA := MOTOR_MAX_PWM + PID_value;
-			PWM_motorBB := MOTOR_MAX_PWM;
-		elsif (PID_value > 0) then
-			PWM_motorAA := MOTOR_MAX_PWM;
-			PWM_motorBB := MOTOR_MAX_PWM - PID_value;
-		else
-			PWM_motorAA := MOTOR_MAX_PWM;
-			PWM_motorBB := MOTOR_MAX_PWM;
-		end if;
-		
-		if pwm_motorAA < 0 then
-			pwm_motorAA := -pwm_motorAA;
-			motor_direcction <= 1;
-		elsif pwm_motorBB < 0 then
-			pwm_motorBB := -pwm_motorBB;
-			motor_direcction <= -1;
-		else
-			motor_direcction <= 0;
-		end if;
-		if pwm_motorAA > MOTOR_MAX_PWM then
-			pwm_motorAA := MOTOR_MAX_PWM;
-		end if;
-		if pwm_motorBB > MOTOR_MAX_PWM then
-			pwm_motorBB := MOTOR_MAX_PWM;
-		end if;
-		pwm_motorA <= std_logic_vector(to_unsigned(pwm_motorAA, 7)); 
-		pwm_motorB <= std_logic_vector(to_unsigned(pwm_motorBB, 7));
+		PID_value <= ( proportional * KP ) + ( derivative * KD ) + (integral * KI);
+--		if (PID_value < 0) then
+--			PWM_motorAA := MOTOR_MAX_PWM + PID_value;
+--			PWM_motorBB := MOTOR_MAX_PWM;
+--		elsif (PID_value > 0) then
+--			PWM_motorAA := MOTOR_MAX_PWM;
+--			PWM_motorBB := MOTOR_MAX_PWM - PID_value;
+--		else
+--			PWM_motorAA := MOTOR_MAX_PWM;
+--			PWM_motorBB := MOTOR_MAX_PWM;
+--		end if;
+--		
+--		if pwm_motorAA < 0 then
+--			pwm_motorAA := -pwm_motorAA;
+--			motor_direcction <= 1;
+--		elsif pwm_motorBB < 0 then
+--			pwm_motorBB := -pwm_motorBB;
+--			motor_direcction <= -1;
+--		else
+--			motor_direcction <= 0;
+--		end if;
+--		if pwm_motorAA > MOTOR_MAX_PWM then
+--			pwm_motorAA := MOTOR_MAX_PWM;
+--		end if;
+--		if pwm_motorBB > MOTOR_MAX_PWM then
+--			pwm_motorBB := MOTOR_MAX_PWM;
+--		end if;
+--		pwm_motorA <= std_logic_vector(to_unsigned(pwm_motorAA, 7)); 
+--		pwm_motorB <= std_logic_vector(to_unsigned(pwm_motorBB, 7));
 		last_proportional := proportional;
 	end process;
 end architecture;
