@@ -1,14 +1,18 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
--- modulo PWM de 100 estados, desde 0% a 100%
+
+--- Modulo PWM de 100 estados, desde 0% a 100% ---
 entity pwm_dc is
     PORT(
-        clk    : IN  STD_LOGIC; -- Señal de reloj, idealmente deberia ser de hasta 20khz
-        reset  : IN  STD_LOGIC; -- señal de reset
-        duty_cycle: IN  STD_LOGIC_VECTOR(6 downto 0); --Señal de entrada que indica el porcentage en alto del PWM
-        pwm_out : OUT STD_LOGIC -- Salida del PWM.
-    );
+		  --- Señal de relog, frecuencia del PWM ---
+        clk    : IN  STD_LOGIC; 
+		  --- Señal de reset ---
+        reset  : IN  STD_LOGIC; 
+		  --- valor del duty cycle  ---
+        duty_cycle: IN  STD_LOGIC_VECTOR(6 downto 0);
+		  --- Salida del PWM ---
+        pwm_out : OUT STD_LOGIC);
 end pwm_dc;
   
 architecture Behavioral of pwm_dc is

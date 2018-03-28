@@ -3,12 +3,14 @@ LIBRARY ieee ;
 USE ieee.std_logic_1164.all ;
 use ieee.numeric_std.all;
 
-
 ENTITY Top IS
 	generic (num_de_cont:integer := 4);
 PORT(
+	--- Entrada de relog ---
 	CLK_50M 	: in std_logic;
+	--- Entrada de reset ---
 	Rst  		: in std_logic;
+	--- Salidas de los LED ---
 	led0		: out std_logic;
 	led1		: out std_logic;
 	led2		: out std_logic;
@@ -17,23 +19,25 @@ PORT(
 	led5		: out	std_logic;
 	led6		: out std_logic;
 	led7		: out std_logic;
+	--- Salidas PWM de los motores ---
 	motor_left_pwm_out : out std_LOGIC;
 	motor_right_pwm_out : out std_LOGIC;
+	--- Salida de sentido de giro de los motores ---
 	motor_left1 : out std_LOGIC;
 	motor_left2 : out std_LOGIC;
 	motor_right1 : out std_LOGIC;
 	motor_right2 : out std_logic;
+	--- Comunicacion SPI para conversor ADC
 	adc_sclk	: out std_logic;
 	adc_ss	: out std_logic;
 	adc_mosi	: out std_logic;
 	adc_miso	: in std_logic;
+	--- Señales de Testeo ---
 	out_motor_clock		: out std_LOGIC;
    out_ADC_clock			: out std_LOGIC;
    out_port_serie_clock	: out std_LOGIC;
    out_PLL_clock			: out std_LOGIC;
-   out_pll_locked		   : out std_LOGIC);
---	Pll_locked : out std_logic;
---	Out_7 : out std_logic_vector (6 downto 0));	
+   out_pll_locked		   : out std_LOGIC);	
 END Top ;
 
 ARCHITECTURE Behavior OF Top IS
@@ -41,13 +45,16 @@ ARCHITECTURE Behavior OF Top IS
 -- Declaracion de componentes
 -- lectura de sensores mediante maquina de estado
 	component adc_pid_error is
-	port(
+	generic(
+		--- threshold value between black and white --
+		threshold_value    : integer :=  1900 );
+	port (
 		sensor_data	: out std_logic_vector(7 downto 0);
 		sensor_state	: out std_logic_vector(7 downto 0);
 		CLK_50M		: in std_logic;
 		reset			: in std_logic;
-		
-				--- Datos de entrada ADC ---
+
+		--- Datos de entrada ADC ---
 		ADC_CH0  :  IN INTEGER RANGE 0 TO 4095;
 		ADC_CH1  :  IN INTEGER RANGE 0 TO 4095;
 		ADC_CH2  :  IN INTEGER RANGE 0 TO 4095;
@@ -60,35 +67,48 @@ ARCHITECTURE Behavior OF Top IS
 	-- Definicion del PWM
 	component pwm_dc is
     PORT(
-        clk    : IN  STD_LOGIC;
-        reset  : IN  STD_LOGIC;
+		  --- Señal de relog, frecuencia del PWM ---
+        clk    : IN  STD_LOGIC; 
+		  --- Señal de reset ---
+        reset  : IN  STD_LOGIC; 
+		  --- valor del duty cycle  ---
         duty_cycle: IN  STD_LOGIC_VECTOR(6 downto 0);
+		  --- Salida del PWM ---
         pwm_out : OUT STD_LOGIC);
 	end component;
 
 	-- Definicion del modulo de control por PID
 	component pid_control is
 	generic(
-		KP               : integer :=  25 ;
-		KI               : integer :=  3 ;
-		KD               : integer :=  0); 
+		--- Parametro del controlador PID ---
+		KP               : integer :=  20 ;
+		KI               : integer :=  0 ;
+		KD               : integer :=  0 );
 	port (
+	   --- Entrada de reloj ---
 		clk_50mhz : in std_logic;
-		reset_btn : in std_logic;
-		sensor_data: in std_logic_vector(7 downto 0);
-      PID_value : OUT integer range -500 to 500);
+		--- Entrada de reset ---
+		reset_btn : in std_logic; 
+		--- Entrada del error desde read_sensor_state ---
+		sensor_data: in std_logic_vector(7 downto 0); 
+		PID_value : OUT integer range -500 to 500);
 	end component;
 	
 	
 	component Top_pll IS
-	PORT (	
-			Y_motor : out std_logic;
-			Y_ADC : out std_logic;
-			Y_portserie : out std_logic;
-			cx0				:	out std_logic;	
-			areset		: IN STD_LOGIC  := '0';
-			inclk0		: IN STD_LOGIC  := '0';
-			locked		: OUT STD_LOGIC);
+	PORT (
+		--- Frecuencia de salida divididas---
+		Y_motor : out std_logic;
+		Y_ADC : out std_logic;
+		Y_portserie : out std_logic;
+		--- Salida directa del PLL ---
+		cx0				:	out std_logic;
+		--- Entrada del reset ---
+		areset		: IN STD_LOGIC  := '0';
+		--- Entrada del reloj del FPGA, 50 MHz ---
+		inclk0		: IN STD_LOGIC  := '0';
+		--- Salida activada en alto cuando el PLL esta enganchado ---
+		locked		: OUT STD_LOGIC);
 	END component ;
 	
 	-- ADC conversion
@@ -120,26 +140,31 @@ ARCHITECTURE Behavior OF Top IS
 	
 	component motor_control is
 	generic(
-		MOTOR_MAX_PWM    : integer :=  80); 
+	   --- definicion del PWM maximo que pueden tomar ---
+		--- los valores de PWM ---
+		MOTOR_MAX_PWM    : integer :=  99); 
 	port (
-		reset_btn : in std_logic; -- Entrada de reset
-		PID_value: in integer range -500 to 500; -- Entrada del error desde read_sensor_state
-		PWM_motor_left: out std_logic_vector(6 downto 0); -- Salida del PWM del motor_A (izquierdo)
+	   --- Entrada de reset ---
+		reset_btn : in std_logic;
+		--- Entrada del error desde read_sensor_state ---
+		PID_value: in integer range -500 to 500;
+		--- Salida del PWM del motor_A (izquierdo) ---
+		PWM_value_motor_left: out std_logic_vector(6 downto 0);
+		--- Salida de polaridad del motor A(Izquierdo) ---
 		motor_left_A	: out std_logic;
 		motor_left_B	: out std_logic;
+		--- Salida de polaridad del motor B(Derecho).
 		motor_right_A	: out std_logic;
 		motor_right_B	: out std_logic;
-		PWM_motor_right: out std_logic_vector(6 downto 0)); -- Salida del PWM del motor_B (derecho)
+		--- Salida del PWM del motor_B (derecho) ---
+		PWM_value_motor_right: out std_logic_vector(6 downto 0));
 	end component;
 
 signal sensor_data		: std_logic_vector(7 downto 0);
 signal sensor_state		: std_logic_vector(7 downto 0);
-signal read_ok 			: std_logic;
 signal reset				: std_LOGIC;
-signal dato_ok_top		: std_LOGIC;
 signal pwm_motor_left	:std_logic_vector(6 downto 0);
 signal pwm_motor_right  :std_logic_vector(6 downto 0);
-signal adc_state_out 	: std_logic_vector(2 downto 0);
 signal motor_clock		: std_LOGIC;
 signal ADC_clock			: std_LOGIC;
 signal port_serie_clock	: std_LOGIC;
@@ -204,7 +229,7 @@ BEGIN
 	velocity_motor_control : motor_control port map(
 		reset,
 		PID_value,
-		PWM_motor_left,
+		pwm_motor_left,
 		motor_left1,
 		motor_left2,
 		motor_right1,
@@ -212,14 +237,10 @@ BEGIN
 		PWM_motor_right);
 	motor_left_pwm : pwm_dc port map(motor_clock, reset, PWM_motor_left, motor_left_pwm_out);
 	motor_right_pwm : pwm_dc port map(motor_clock, reset, PWM_motor_right, motor_right_pwm_out);
-	
-	
-
 		
 		
-		
-	reset <= '1';
-	reset_pll <='0';
+	reset <= Rst;
+	reset_pll <= not reset;
 
    out_motor_clock <= motor_clock;
    out_ADC_clock <=ADC_clock;
@@ -227,7 +248,7 @@ BEGIN
    out_PLL_clock <= PLL_clock;
    out_pll_locked	<=pll_locked;
 
-   -- Proceso por el cueal se muestran distintos estados de la medicion de adc por los led
+   -- Proceso por el cual se muestran distintos estados de los sensores de linea.
 	process(sensor_state)
 	variable error :integer;
 	begin

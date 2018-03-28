@@ -3,13 +3,18 @@ LIBRARY ieee ;
 USE ieee.std_logic_1164.all ;
 
 ENTITY Top_pll IS
-PORT (	
+PORT (
+		--- Frecuencia de salida divididas---
 		Y_motor : out std_logic;
 		Y_ADC : out std_logic;
 		Y_portserie : out std_logic;
-		cx0				:	out std_logic;	
+		--- Salida directa del PLL ---
+		cx0				:	out std_logic;
+		--- Entrada del reset ---
 		areset		: IN STD_LOGIC  := '0';
+		--- Entrada del reloj del FPGA, 50 MHz ---
 		inclk0		: IN STD_LOGIC  := '0';
+		--- Salida activada en alto cuando el PLL esta enganchado ---
 		locked		: OUT STD_LOGIC);
 END Top_pll ;
 

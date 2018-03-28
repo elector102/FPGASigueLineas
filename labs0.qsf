@@ -88,7 +88,6 @@ set_global_assignment -name VHDL_FILE pll/Deco.vhd
 set_global_assignment -name VHDL_FILE PID_control.vhd
 set_global_assignment -name VHDL_FILE pwm.vhd
 set_global_assignment -name VHDL_FILE TOP.vhd
-set_global_assignment -name VHDL_FILE TB.vhd
 set_global_assignment -name VHDL_FILE adc_pid_error.vhd
 set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
