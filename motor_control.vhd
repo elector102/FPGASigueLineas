@@ -75,7 +75,7 @@ begin
 				PWM_value_motor_left_buffer := 0;
 				PWM_value_motor_right_buffer := 0;
 		end if;
-		
+
 		PWM_value_motor_left <= std_logic_vector(to_unsigned(PWM_value_motor_left_buffer, 7)); 
 		PWM_value_motor_right <= std_logic_vector(to_unsigned(PWM_value_motor_right_buffer, 7));
 	end process;
